@@ -26,7 +26,7 @@ func RegisterPlayerController(env *config.Env, playerService *service.PlayerServ
 // @Produce      json
 // @Param        pageSkip  query int false "Page skip (default: 0)"
 // @Param        pageSize  query int false "Page size (default: 10)"
-// @Success      200  {array} model.Player
+// @Success      200
 // @Failure      500  {object} map[string]string
 // @Security     BearerAuth
 // @Router       /players [get]

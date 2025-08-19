@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/berpergian/chi_learning/account_service/controller"
+	"github.com/berpergian/chi_learning/account_service/repository"
 	"github.com/berpergian/chi_learning/account_service/service"
-	"github.com/berpergian/chi_learning/player_service/repository"
 	"github.com/berpergian/chi_learning/shared/config"
 	"github.com/berpergian/chi_learning/shared/database"
 	sharedService "github.com/berpergian/chi_learning/shared/service"

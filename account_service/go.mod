@@ -3,7 +3,6 @@ module github.com/berpergian/chi_learning/account_service
 go 1.22
 
 require (
-	github.com/berpergian/chi_learning/player_service v0.0.0
 	github.com/berpergian/chi_learning/shared v0.0.0
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/cors v1.2.2
@@ -57,5 +56,3 @@ require (
 )
 
 replace github.com/berpergian/chi_learning/shared => ../shared
-
-replace github.com/berpergian/chi_learning/player_service => ../player_service

@@ -22,7 +22,3 @@ func RegisterPlayerRepository(db *mongo.Database) *PlayerRepository {
 func (repository *PlayerRepository) GetByEmail(ctx context.Context, email string) (model.Player, error) {
 	return repository.GetOne(ctx, bson.M{"email": email})
 }
-
-func (repository *PlayerRepository) GetByPlayerID(ctx context.Context, playerId string) (model.Player, error) {
-	return repository.GetOne(ctx, bson.M{"playerId": playerId})
-}

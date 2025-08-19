@@ -1,38 +1,4 @@
 basePath: /
-definitions:
-  message.LoginRequest:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-    type: object
-  message.LoginResponse:
-    properties:
-      accessToken:
-        type: string
-      email:
-        type: string
-      name:
-        type: string
-      playerId:
-        type: string
-    type: object
-  model.Player:
-    properties:
-      email:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      playerId:
-        type: string
-    type: object
 info:
   contact: {}
   description: This is a sample description.
@@ -73,10 +39,6 @@ paths:
       responses:
         "200":
           description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Player'
-            type: array
         "500":
           description: Internal Server Error
           schema:
@@ -88,30 +50,4 @@ paths:
       summary: Player GetList
       tags:
       - player
-  /registerOrLogin:
-    post:
-      consumes:
-      - application/json
-      description: Register a new account if not exist, otherwise login
-      parameters:
-      - description: Login Request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/message.LoginRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/message.LoginResponse'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Register or Login
-      tags:
-      - account
 swagger: "2.0"

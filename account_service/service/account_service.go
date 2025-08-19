@@ -5,10 +5,10 @@ import (
 	"errors"
 
 	"github.com/berpergian/chi_learning/account_service/message"
-	"github.com/berpergian/chi_learning/player_service/model"
-	"github.com/berpergian/chi_learning/player_service/repository"
+	"github.com/berpergian/chi_learning/account_service/repository"
 	"github.com/berpergian/chi_learning/shared/config"
 	"github.com/berpergian/chi_learning/shared/event"
+	"github.com/berpergian/chi_learning/shared/model"
 	"github.com/berpergian/chi_learning/shared/service"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"

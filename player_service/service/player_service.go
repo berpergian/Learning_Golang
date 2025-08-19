@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/berpergian/chi_learning/player_service/model"
 	"github.com/berpergian/chi_learning/player_service/repository"
 	"github.com/berpergian/chi_learning/shared/config"
+	"github.com/berpergian/chi_learning/shared/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

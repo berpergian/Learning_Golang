@@ -1,6 +1,6 @@
 package message
 
-import "github.com/berpergian/chi_learning/player_service/model"
+import "github.com/berpergian/chi_learning/shared/model"
 
 type PlayerGetListResponse struct {
 	PlayerId string `json:"playerId"`

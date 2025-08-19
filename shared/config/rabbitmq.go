@@ -27,7 +27,7 @@ func RegisterRabbitBus(env *Env) (*RabbitBus, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := ch.ExchangeDeclare(exchange, "fanout", true, false, false, false, nil); err != nil {
+	if err := ch.ExchangeDeclare(exchange, "topic", true, false, false, false, nil); err != nil {
 		return nil, err
 	}
 	return &RabbitBus{conn: conn, ch: ch, exchange: exchange}, nil
