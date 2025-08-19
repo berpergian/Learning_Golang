@@ -1,0 +1,71 @@
+basePath: /
+definitions:
+  model.Player:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      playerId:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is a sample description.
+  title: Player Service Learning API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Returns simple OK
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - health
+  /players:
+    get:
+      consumes:
+      - application/json
+      description: Returns list of players
+      parameters:
+      - description: 'Page skip (default: 0)'
+        in: query
+        name: pageSkip
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Player'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Player GetList
+      tags:
+      - player
+swagger: "2.0"

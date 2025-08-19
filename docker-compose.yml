@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  account_service:
+    build: ./account_service
+    depends_on: [rabbitmq]
+    environment:
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+  player_service:
+    build: ./player_service
+    depends_on: [rabbitmq]
+    environment:
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
