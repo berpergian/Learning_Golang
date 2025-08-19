@@ -29,13 +29,12 @@ type Env struct {
 	Issuer                 string `mapstructure:"ISSUER"`
 }
 
-func ReadEnvironment() *Env {
+func ReadEnvironment(service string) *Env {
 	env := Env{}
 
 	_, b, _, _ := runtime.Caller(0)
-	basePath := filepath.Join(filepath.Dir(b), "..")
-
-	envPath := filepath.Join(basePath, ".env")
+	basePath := filepath.Join(filepath.Dir(b), "../..")
+	envPath := filepath.Join(basePath, service+"_service", ".env")
 
 	viper.SetConfigFile(envPath)
 	viper.SetConfigType("env")

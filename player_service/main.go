@@ -5,7 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	_ "github.com/berpergian/chi_learning/player_service/docs" // swagger generated docs
+	"github.com/berpergian/chi_learning/player_service/subscriber"
 	"github.com/berpergian/chi_learning/shared/config"
+	sharedConstant "github.com/berpergian/chi_learning/shared/constant"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -18,14 +21,14 @@ import (
 
 func main() {
 	app := &config.Application{}
-	app.Env = config.ReadEnvironment()
+	app.Env = config.ReadEnvironment(sharedConstant.Player)
 	app.Database = config.ReadDatabase(app.Env)
 
 	bus, err := config.RegisterRabbitBus(app.Env)
 	if err != nil {
 		panic(err)
 	}
-
+	subscriber.Register(bus)
 	defer bus.Close()
 	defer app.Database.CloseDatabase()
 
