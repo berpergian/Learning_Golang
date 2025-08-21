@@ -4,12 +4,31 @@ definitions:
     properties:
       email:
         type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  message.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+    type: object
+  message.RegisterRequest:
+    properties:
+      email:
+        type: string
       name:
         type: string
       password:
         type: string
+    required:
+    - email
+    - name
+    - password
     type: object
-  message.LoginResponse:
+  message.RegisterResponse:
     properties:
       accessToken:
         type: string
@@ -41,11 +60,11 @@ paths:
       summary: Health Check
       tags:
       - health
-  /registerOrLogin:
+  /login:
     post:
       consumes:
       - application/json
-      description: Register a new account if not exist, otherwise login
+      description: Login existing account
       parameters:
       - description: Login Request
         in: body
@@ -64,7 +83,33 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Register or Login
+      summary: Login
+      tags:
+      - account
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new account
+      parameters:
+      - description: Register Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/message.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/message.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Register
       tags:
       - account
 swagger: "2.0"

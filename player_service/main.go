@@ -11,6 +11,7 @@ import (
 	sharedConstant "github.com/berpergian/chi_learning/shared/constant"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/go-playground/validator/v10"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -34,6 +35,7 @@ func main() {
 
 	timeout := time.Duration(app.Env.ContextTimeout) * time.Second
 
+	validate := validator.New(validator.WithRequiredStructEnabled())
 	router := chi.NewRouter()
 
 	// CORS middleware
@@ -51,7 +53,7 @@ func main() {
 		httpSwagger.URL("http://localhost"+app.Env.ServerAddress+"/swagger/doc.json"),
 	))
 
-	RouteSetup(timeout, router, app.Env, app.Database, bus)
+	RouteSetup(timeout, router, app.Env, app.Database, bus, validate)
 
 	fmt.Println("Server up with environment:" + app.Env.AppEnv)
 	http.ListenAndServe(app.Env.ServerAddress, router)

@@ -38,9 +38,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/registerOrLogin": {
+        "/login": {
             "post": {
-                "description": "Register a new account if not exist, otherwise login",
+                "description": "Login existing account",
                 "consumes": [
                     "application/json"
                 ],
@@ -50,7 +50,7 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "Register or Login",
+                "summary": "Login",
                 "parameters": [
                     {
                         "description": "Login Request",
@@ -77,11 +77,79 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/register": {
+            "post": {
+                "description": "Register a new account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Register",
+                "parameters": [
+                    {
+                        "description": "Register Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/message.RegisterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "message.LoginRequest": {
             "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "message.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "message.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
@@ -94,7 +162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "message.LoginResponse": {
+        "message.RegisterResponse": {
             "type": "object",
             "properties": {
                 "accessToken": {

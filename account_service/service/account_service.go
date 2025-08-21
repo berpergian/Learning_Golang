@@ -10,29 +10,38 @@ import (
 	"github.com/berpergian/chi_learning/shared/event"
 	"github.com/berpergian/chi_learning/shared/model"
 	"github.com/berpergian/chi_learning/shared/service"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AccountService struct {
-	Repo *repository.PlayerRepository
-	JWT  *service.JWTManager
-	Bus  *config.RabbitBus
-	Env  *config.Env
+	Repo     *repository.PlayerRepository
+	JWT      *service.JWTManager
+	Bus      *config.RabbitBus
+	Env      *config.Env
+	Validate *validator.Validate
 }
 
-func RegisterAccountService(env *config.Env, repo *repository.PlayerRepository, jwt *service.JWTManager, bus *config.RabbitBus) *AccountService {
-	return &AccountService{Repo: repo, JWT: jwt, Bus: bus, Env: env}
+func RegisterAccountService(env *config.Env, repo *repository.PlayerRepository,
+	jwt *service.JWTManager, bus *config.RabbitBus, validate *validator.Validate) *AccountService {
+	return &AccountService{Repo: repo, JWT: jwt, Bus: bus, Env: env, Validate: validate}
 }
 
-func (s *AccountService) RegisterOrLogin(ctx context.Context, req message.LoginRequest) (*message.LoginResponse, error) {
-	player, err := s.Repo.GetByEmail(ctx, req.Email)
+func (service *AccountService) Register(ctx context.Context, req message.RegisterRequest) (*message.RegisterResponse, error) {
+	err := service.Validate.Struct(req)
+	if err != nil {
+		return nil, errors.New("request not valid")
+	}
+
+	player, err := service.Repo.GetByEmail(ctx, req.Email)
 	if err != nil || player.ID.IsZero() {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
 			return nil, err
 		}
+
 		player = model.Player{
 			ID:       primitive.NewObjectID(),
 			PlayerId: uuid.New().String(),
@@ -40,25 +49,49 @@ func (s *AccountService) RegisterOrLogin(ctx context.Context, req message.LoginR
 			Email:    req.Email,
 			Password: string(hashed),
 		}
-		if err := s.Repo.Create(ctx, &player); err != nil {
+
+		if err := service.Repo.Create(ctx, &player); err != nil {
 			return nil, err
 		}
-		_ = s.Bus.Publish(ctx, event.TopicPlayerRegistered, event.PlayerRegistered{
+
+		_ = service.Bus.Publish(ctx, event.TopicPlayerRegistered, event.PlayerRegistered{
 			PlayerID: player.PlayerId, Email: player.Email, Name: player.Name,
 		})
-	} else {
-		if err := bcrypt.CompareHashAndPassword([]byte(player.Password), []byte(req.Password)); err != nil {
-			return nil, errors.New("invalid credentials")
+
+		token, err := service.JWT.Generate(player.PlayerId)
+		if err != nil {
+			return nil, err
 		}
+
+		return &message.RegisterResponse{
+			AccessToken: token, PlayerId: player.PlayerId, Email: player.Email, Name: player.Name,
+		}, nil
 	}
-	_ = s.Bus.Publish(ctx, event.TopicPlayerLoggedIn, event.PlayerLoggedIn{
-		PlayerID: player.PlayerId, Email: player.Email,
-	})
-	token, err := s.JWT.Generate(player.PlayerId)
+
+	return nil, errors.New("player already registered")
+}
+
+func (service *AccountService) Login(ctx context.Context, req message.LoginRequest) (*message.LoginResponse, error) {
+	err := service.Validate.Struct(req)
+	if err != nil {
+		return nil, errors.New("request not valid")
+	}
+
+	player, err := service.Repo.GetByEmail(ctx, req.Email)
+	if err != nil || player.ID.IsZero() {
+		return nil, errors.New("player not found")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(player.Password), []byte(req.Password)); err != nil {
+		return nil, errors.New("wrong password")
+	}
+
+	token, err := service.JWT.Generate(player.PlayerId)
 	if err != nil {
 		return nil, err
 	}
+
 	return &message.LoginResponse{
-		AccessToken: token, PlayerId: player.PlayerId, Email: player.Email, Name: player.Name,
+		AccessToken: token,
 	}, nil
 }

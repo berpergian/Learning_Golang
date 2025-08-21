@@ -10,10 +10,12 @@ import (
 	"github.com/berpergian/chi_learning/shared/database"
 	sharedService "github.com/berpergian/chi_learning/shared/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RouteSetup(timeout time.Duration, route *chi.Mux, env *config.Env, dbClient database.IDatabaseClient, bus *config.RabbitBus) {
+func RouteSetup(timeout time.Duration, route *chi.Mux, env *config.Env,
+	dbClient database.IDatabaseClient, bus *config.RabbitBus, validate *validator.Validate) {
 	jwtManager := &sharedService.JWTManager{
 		Secret: []byte(env.AccessTokenSecret),
 		Issuer: env.Issuer,
