@@ -2,21 +2,39 @@ package service
 
 import (
 	"context"
+	"log"
+	"time"
 
 	"github.com/berpergian/chi_learning/player_service/repository"
 	"github.com/berpergian/chi_learning/shared/config"
+	"github.com/berpergian/chi_learning/shared/event"
 	"github.com/berpergian/chi_learning/shared/model"
+	sharedStaticData "github.com/berpergian/chi_learning/shared/staticdata"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type PlayerService struct {
-	PlayerRepository *repository.PlayerRepository
-	Env              *config.Env
+	Env                       *config.Env
+	PlayerRepository          *repository.PlayerRepository
+	PlayerCharacterRepository *repository.PlayerCharacterRepository
+	PlayerInventoryRepository *repository.PlayerInventoryRepository
+	StaticDataService         *sharedStaticData.StaticDataService
 }
 
-func RegisterPlayerService(env *config.Env, playerRepository *repository.PlayerRepository) *PlayerService {
-	return &PlayerService{PlayerRepository: playerRepository, Env: env}
+func RegisterPlayerService(env *config.Env,
+	playerRepository *repository.PlayerRepository,
+	playerCharacterRepository *repository.PlayerCharacterRepository,
+	playerInventoryRepository *repository.PlayerInventoryRepository,
+	staticDataService *sharedStaticData.StaticDataService) *PlayerService {
+	return &PlayerService{
+		Env:                       env,
+		PlayerRepository:          playerRepository,
+		PlayerCharacterRepository: playerCharacterRepository,
+		PlayerInventoryRepository: playerInventoryRepository,
+		StaticDataService:         staticDataService,
+	}
 }
 
 func (service *PlayerService) GetAllData(ctx context.Context, pageSkip int, pageSize int) ([]model.Player, error) {
@@ -41,4 +59,33 @@ func (service *PlayerService) GetAllData(ctx context.Context, pageSkip int, page
 	}
 
 	return players, nil
+}
+
+func (service *PlayerService) SetupPlayerRegistered(data event.PlayerRegistered) {
+	characters := service.StaticDataService.Characters().All()
+	items := service.StaticDataService.Items().All()
+
+	var charaInvent []model.CharacterStaticData
+	for _, chara := range characters {
+		chara.Level = 1
+		charaInvent = append(charaInvent, chara)
+	}
+
+	playerChara := model.PlayerCharacter{
+		PlayerBase: model.CreatePlayerBase(primitive.NewObjectID(), data.PlayerID),
+		Items:      charaInvent,
+	}
+	playerInvent := model.PlayerInventory{
+		PlayerBase: model.CreatePlayerBase(primitive.NewObjectID(), data.PlayerID),
+		Items:      items,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if errChara := service.PlayerCharacterRepository.Create(ctx, &playerChara); errChara != nil {
+		log.Println(errChara)
+	}
+	if errInvent := service.PlayerInventoryRepository.Create(ctx, &playerInvent); errInvent != nil {
+		log.Println(errInvent)
+	}
 }

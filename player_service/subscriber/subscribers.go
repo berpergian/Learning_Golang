@@ -4,25 +4,27 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/berpergian/chi_learning/player_service/service"
 	"github.com/berpergian/chi_learning/shared/config"
 	"github.com/berpergian/chi_learning/shared/event"
 )
 
-func Register(bus *config.RabbitBus) error {
-	return bus.Subscribe("player-service", func(eventType string, body []byte) error {
+func Register(env *config.Env, bus *config.RabbitBus, service *service.PlayerService) error {
+	return bus.Subscribe(event.PlayerService, func(eventType string, body []byte) error {
 		switch eventType {
-		case event.TopicPlayerRegistered:
+		case event.PlayerRegisteredTopic:
 			var e event.PlayerRegistered
 			if err := json.Unmarshal(body, &e); err != nil {
 				return err
 			}
-			log.Printf("[player-service] PlayerRegistered: id=%s email=%s name=%s", e.PlayerID, e.Email, e.Name)
-		case event.TopicPlayerLoggedIn:
+			log.Printf("["+event.PlayerService+"] PlayerRegistered: id=%s email=%s name=%s", e.PlayerID, e.Email, e.Name)
+			service.SetupPlayerRegistered(e)
+		case event.PlayerLoggedInTopic:
 			var e event.PlayerLoggedIn
 			if err := json.Unmarshal(body, &e); err != nil {
 				return err
 			}
-			log.Printf("[player-service] PlayerLoggedIn: id=%s email=%s", e.PlayerID, e.Email)
+			log.Printf("["+event.PlayerService+"] PlayerLoggedIn: id=%s email=%s", e.PlayerID, e.Email)
 		}
 		return nil
 	})

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	sharedConstant "github.com/berpergian/chi_learning/shared/constant"
 	"github.com/berpergian/chi_learning/shared/model"
 	"github.com/berpergian/chi_learning/shared/repository"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,7 +16,7 @@ type PlayerRepository struct {
 
 func RegisterPlayerRepository(db *mongo.Database) *PlayerRepository {
 	return &PlayerRepository{
-		BaseRepository: repository.RegisterBaseRepository[model.Player](db, model.CollectionPlayer),
+		BaseRepository: repository.RegisterBaseRepository[model.Player](db, sharedConstant.CollectionPlayer, sharedConstant.PlayerDocument),
 	}
 }
 

@@ -44,8 +44,8 @@ func HealthRouter(router chi.Router) {
 func AccountRouter(router chi.Router, env *config.Env, jwtManager *sharedService.JWTManager,
 	database *mongo.Database, bus *config.RabbitBus, validate *validator.Validate) {
 	playerRepository := repository.RegisterPlayerRepository(database)
-	accountService := service.RegisterAccountService(env, playerRepository, jwtManager, bus, validate)
-	accountController := controller.RegisterAccountController(env, accountService)
+	accountService := service.RegisterAccountService(env, playerRepository, jwtManager, bus)
+	accountController := controller.RegisterAccountController(env, accountService, validate)
 
 	router.Post("/register", accountController.Register)
 	router.Post("/login", accountController.Login)

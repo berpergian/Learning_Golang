@@ -10,31 +10,29 @@ import (
 	"github.com/berpergian/chi_learning/shared/event"
 	"github.com/berpergian/chi_learning/shared/model"
 	"github.com/berpergian/chi_learning/shared/service"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AccountService struct {
-	Repo     *repository.PlayerRepository
-	JWT      *service.JWTManager
-	Bus      *config.RabbitBus
-	Env      *config.Env
-	Validate *validator.Validate
+	Repo *repository.PlayerRepository
+	JWT  *service.JWTManager
+	Bus  *config.RabbitBus
+	Env  *config.Env
 }
 
 func RegisterAccountService(env *config.Env, repo *repository.PlayerRepository,
-	jwt *service.JWTManager, bus *config.RabbitBus, validate *validator.Validate) *AccountService {
-	return &AccountService{Repo: repo, JWT: jwt, Bus: bus, Env: env, Validate: validate}
+	jwt *service.JWTManager, bus *config.RabbitBus) *AccountService {
+	return &AccountService{
+		Repo: repo,
+		JWT:  jwt,
+		Bus:  bus,
+		Env:  env,
+	}
 }
 
 func (service *AccountService) Register(ctx context.Context, req message.RegisterRequest) (*message.RegisterResponse, error) {
-	err := service.Validate.Struct(req)
-	if err != nil {
-		return nil, errors.New("request not valid")
-	}
-
 	player, err := service.Repo.GetByEmail(ctx, req.Email)
 	if err != nil || player.ID.IsZero() {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -43,18 +41,17 @@ func (service *AccountService) Register(ctx context.Context, req message.Registe
 		}
 
 		player = model.Player{
-			ID:       primitive.NewObjectID(),
-			PlayerId: uuid.New().String(),
-			Name:     req.Name,
-			Email:    req.Email,
-			Password: string(hashed),
+			PlayerBase: model.CreatePlayerBase(primitive.NewObjectID(), uuid.New().String()),
+			Name:       req.Name,
+			Email:      req.Email,
+			Password:   string(hashed),
 		}
 
 		if err := service.Repo.Create(ctx, &player); err != nil {
 			return nil, err
 		}
 
-		_ = service.Bus.Publish(ctx, event.TopicPlayerRegistered, event.PlayerRegistered{
+		_ = service.Bus.Publish(ctx, event.PlayerRegisteredTopic, event.PlayerRegistered{
 			PlayerID: player.PlayerId, Email: player.Email, Name: player.Name,
 		})
 
@@ -68,15 +65,10 @@ func (service *AccountService) Register(ctx context.Context, req message.Registe
 		}, nil
 	}
 
-	return nil, errors.New("player already registered")
+	return nil, errors.New("an account with the provided data is already registered")
 }
 
 func (service *AccountService) Login(ctx context.Context, req message.LoginRequest) (*message.LoginResponse, error) {
-	err := service.Validate.Struct(req)
-	if err != nil {
-		return nil, errors.New("request not valid")
-	}
-
 	player, err := service.Repo.GetByEmail(ctx, req.Email)
 	if err != nil || player.ID.IsZero() {
 		return nil, errors.New("player not found")

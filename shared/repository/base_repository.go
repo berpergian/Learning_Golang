@@ -9,18 +9,22 @@ import (
 )
 
 type BaseRepository[T any] struct {
-	Collection *mongo.Collection
+	Collection   *mongo.Collection
+	DocumentType string
 }
 
-func RegisterBaseRepository[T any](db *mongo.Database, collectionName string) *BaseRepository[T] {
+func RegisterBaseRepository[T any](db *mongo.Database, collectionName string, docType string) *BaseRepository[T] {
 	return &BaseRepository[T]{
-		Collection: db.Collection(collectionName),
+		Collection:   db.Collection(collectionName),
+		DocumentType: docType,
 	}
 }
 
 func (r *BaseRepository[T]) Create(ctx context.Context, doc *T) error {
-	if setter, ok := any(doc).(interface{ SetDocTypeFrom(v interface{}) }); ok {
-		setter.SetDocTypeFrom(doc)
+	if setter, ok := any(doc).(interface {
+		SetDocTypeFrom(v interface{}, docType string)
+	}); ok {
+		setter.SetDocTypeFrom(doc, r.DocumentType)
 	}
 	_, err := r.Collection.InsertOne(ctx, doc)
 	return err
